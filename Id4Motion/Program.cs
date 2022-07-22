@@ -20,28 +20,12 @@ var generateFiles = new ActionBlock<string>(async path =>
     var fileBytes = await File.ReadAllBytesAsync(path);
     
     // Main data
-    int offset = 17;
-    int count = 0;
-    bool exit = false;
-    List<byte[]> list = new();
-    for (;;)
-    {
-        var remainder = fileBytes.Length - count - 257;
-        if (offset >= remainder)
-        {
-            offset = remainder;
-            exit = true;
-        }
-        byte[] buffer = new byte[offset];
-        Buffer.BlockCopy(fileBytes, count, buffer, 0, buffer.Length);
-        list.Add(buffer.Skip(1).ToArray());
-        
-        if (exit) break;
-        count += offset;
-    }
-    var data = list.SelectMany(x => x).ToArray();
+    var data = fileBytes
+        .Take(fileBytes.Length - 257)
+        .Where((_, index) => index % 17 != 0)
+        .ToArray();
     await fileManager.SaveFile(fileName, "Data", data);
-
+    
     // Signature data
     var signature = fileBytes
         .TakeLast(256)
