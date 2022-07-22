@@ -2,8 +2,6 @@
 
 public class Files
 {
-    public const int Offset = 17;
-    public const int Line = 16;
     private const string SaveExt = ".bin";
     private const string JdmDir = "JDM";
     private const string ConDir = "Converted";

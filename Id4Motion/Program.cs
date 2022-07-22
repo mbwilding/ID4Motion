@@ -19,13 +19,14 @@ var generateFiles = new ActionBlock<string>(async path =>
     var fileName = Path.GetFileNameWithoutExtension(path);
     var fileBytes = await File.ReadAllBytesAsync(path);
     
-    int offset = Files.Offset;
+    // Main data
+    int offset = 17;
     int count = 0;
     bool exit = false;
     List<byte[]> list = new();
     for (;;)
     {
-        var remainder = fileBytes.Length - count;
+        var remainder = fileBytes.Length - count - 257;
         if (offset >= remainder)
         {
             offset = remainder;
@@ -33,30 +34,18 @@ var generateFiles = new ActionBlock<string>(async path =>
         }
         byte[] buffer = new byte[offset];
         Buffer.BlockCopy(fileBytes, count, buffer, 0, buffer.Length);
-        list.Add(buffer);
+        list.Add(buffer.Skip(1).ToArray());
         
         if (exit) break;
         count += offset;
     }
+    await fileManager.SaveFile(fileName, "Data", list.SelectMany(x => x).ToArray());
 
     // Key data
-    var keyDelimiterIndex = list.FindIndex(x => x.First() == 0x0);
-    var start = keyDelimiterIndex * Files.Offset + 1;
-    var last = fileBytes.Length - start;
     var key = fileBytes
-        .Skip(start)
-        .Take(last)
+        .TakeLast(256)
         .ToArray();
-    await fileManager.SaveFile(fileName, "Key", key);
-    
-    // Main data
-    var data = list
-        .Take(keyDelimiterIndex)
-        .SelectMany(x => x.Skip(1).Take(Files.Line))
-        .ToArray(); 
-    await fileManager.SaveFile(fileName, "Data", data);
-
-
+    await fileManager.SaveFile(fileName, "Signature", key);
 
     Log.Information("Converted: {FileName}", fileName);
 }, blockOptions);
