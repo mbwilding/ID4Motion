@@ -19,18 +19,18 @@ var generateFiles = new ActionBlock<string>(async path =>
     var fileName = Path.GetFileNameWithoutExtension(path);
     var fileBytes = await File.ReadAllBytesAsync(path);
     
-    // Main data
+    // Data
     var data = fileBytes
         .Take(fileBytes.Length - 257)
         .Where((_, index) => index % 17 != 0)
         .ToArray();
     await fileManager.SaveFile(fileName, "Data", data);
     
-    // Signature data
+    // Checksum
     var signature = fileBytes
         .TakeLast(256)
         .ToArray();
-    await fileManager.SaveFile(fileName, "Signature", signature);
+    await fileManager.SaveFile(fileName, "Checksum", signature);
 
     Log.Information("Converted: {FileName}", fileName);
 }, blockOptions);
