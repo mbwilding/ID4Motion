@@ -3,6 +3,7 @@
 public class Files
 {
     public const int Offset = 17;
+    public const int Line = 16;
     private const string SaveExt = ".bin";
     private const string JdmDir = "JDM";
     private const string ConDir = "Converted";
@@ -15,9 +16,7 @@ public class Files
         var jdmDir = Directory.CreateDirectory(JdmDir);
         Directory.CreateDirectory(ConDir);
         
-        FilePaths = Directory.EnumerateFiles(jdmDir.FullName)
-            .Where(x => x.EndsWith(".jdm"))
-            .ToList();
+        FilePaths = Directory.EnumerateFiles(jdmDir.FullName, "*.jdm", SearchOption.AllDirectories).ToList();
 
         if (!FilePaths.Any())
         {

@@ -39,23 +39,24 @@ var generateFiles = new ActionBlock<string>(async path =>
         count += offset;
     }
 
-    var keyDelimiterIndex = list.FindIndex(x => x.First() == 0x0) + 1;
-    var start = keyDelimiterIndex * Files.Offset;
-    var last = fileBytes.Length - start;
-
-    // Main data
-    var data = list
-        .Take(keyDelimiterIndex)
-        .SelectMany(x => x.Take(16))
-        .ToArray(); 
-    await fileManager.SaveFile(fileName, "Data", data);
-
     // Key data
+    var keyDelimiterIndex = list.FindIndex(x => x.First() == 0x0);
+    var start = keyDelimiterIndex * Files.Offset + 1;
+    var last = fileBytes.Length - start;
     var key = fileBytes
         .Skip(start)
         .Take(last)
         .ToArray();
     await fileManager.SaveFile(fileName, "Key", key);
+    
+    // Main data
+    var data = list
+        .Take(keyDelimiterIndex)
+        .SelectMany(x => x.Skip(1).Take(Files.Line))
+        .ToArray(); 
+    await fileManager.SaveFile(fileName, "Data", data);
+
+
 
     Log.Information("Converted: {FileName}", fileName);
 }, blockOptions);
