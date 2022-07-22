@@ -39,13 +39,14 @@ var generateFiles = new ActionBlock<string>(async path =>
         if (exit) break;
         count += offset;
     }
-    await fileManager.SaveFile(fileName, "Data", list.SelectMany(x => x).ToArray());
+    var data = list.SelectMany(x => x).ToArray();
+    await fileManager.SaveFile(fileName, "Data", data);
 
-    // Key data
-    var key = fileBytes
+    // Signature data
+    var signature = fileBytes
         .TakeLast(256)
         .ToArray();
-    await fileManager.SaveFile(fileName, "Signature", key);
+    await fileManager.SaveFile(fileName, "Signature", signature);
 
     Log.Information("Converted: {FileName}", fileName);
 }, blockOptions);
